@@ -255,7 +255,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
         catch ( Exception e )
         {
             System.out.println("Error: Imposible abrir el puerto "+getNombrePuerto());
-            e.printStackTrace();
             setPuerto(null);
             setFlujoEntrada(null);
             setFlujoSalida(null);
@@ -278,7 +277,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
             catch (IOException e)
             {
                 System.out.println("Error: No se ha cerrado la conexion correctamente");
-                e.printStackTrace();
             }
         }
     }
@@ -299,7 +297,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
         catch (IOException e)
         {
             System.out.println("Error: No se ha podido leer datos del puerto serie");
-            e.printStackTrace();
         }
     }
 
@@ -313,7 +310,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
         catch (IOException e)
         {
             System.out.println("Error: No se ha enviado '"+caracter+"' correctamente");
-            e.printStackTrace();
         }
     }
 
@@ -326,7 +322,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
         catch (IOException e)
         {
             System.out.println("Error: No se ha enviado '"+cadena+"' correctamente");
-            e.printStackTrace();
         }
     }
 

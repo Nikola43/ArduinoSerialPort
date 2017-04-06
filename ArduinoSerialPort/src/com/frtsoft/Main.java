@@ -35,67 +35,16 @@ public class Main
                 switch (opcionMenuPrincipal)
                 {
                     //MODULO CONECTARSE A PUERTO SERIE
-                    case 1:
-                        System.out.println(".:| Conectarse a Puerto Serie |:.");
+                    case 1: gestionSerialPort.conectarsePuertoSerie(arduino); break;
 
-                        arduino.setNombrePuerto(gestionSerialPort.seleccionarPuerto()); // Asignamos nombre
-                        arduino.setBaudRate(gestionSerialPort.seleccionarVelocidadTransmision()); // Asignamos velocidad
-                        arduino.abrirPuerto();
-                    break;
-
-                    //MODULO RECIBIR ENVIAR CARACTERES
-                    case 2:
-                        if ( arduino.getEstadoConexion() )
-                        {
-                            do
-                            {
-                                System.out.print("Introduce un caracter de la a-z o 0-9: ");
-                                caracterEnviado = scanner.next().charAt(0);
-                            } while ( (caracterEnviado < 'a' || caracterEnviado > 'z') && (caracterEnviado < '0' || caracterEnviado > '9') );
-
-                            arduino.enviarCaracter(caracterEnviado);
-                            esperar(100);
-                        }
-                        else
-                        {
-                            System.out.println("\nError: Debe estar conectado a un puerto serie para enviar un caracter");
-
-                        }
-                    break;
+                    //MODULO ENVIAR CARACTERES
+                    case 2: gestionSerialPort.enviarCadenaPuertoSerie(arduino); break;
 
                     //MODULO RECIBIR CARACTERES
-                    case 3:
-                        if ( arduino.getEstadoConexion() )
-                        {
-                            do
-                            {
-                                temperatura = arduino.getCaracterRecibido();
-                                System.out.println("Caracter Recibido: "+ temperatura);
-                                esperar(50);
-                            } while (true);
-                        }
-                        else
-                        {
-                            System.out.println("\nError: Debe estar conectado a un puerto serie para leer un caracter");
-                        }
-                    break;
+                    case 3: gestionSerialPort.imprimirCaracterRecibidoPuertoSerie(arduino); break;
 
                     //MODULO LEER SENSOR TEMPERATURA
-                    case 4:
-                        if ( arduino.getEstadoConexion() )
-                        {
-                            do
-                            {
-                                temperatura = arduino.getCaracterRecibido();
-                                System.out.println("Sensor Temperatura: "+temperatura);
-                                esperar(1000);
-                            } while (true);
-                        }
-                        else
-                        {
-                            System.out.println("\nError: Debe estar conectado a un puerto serie para leer un caracter");
-                        }
-                    break;
+                    case 4: gestionSerialPort.imprimirValorSensorLuz(arduino); break;
                 }
             }
 
@@ -144,7 +93,7 @@ public class Main
     {
         System.out.println("\n.:| Arduino Serial Port |:.\n");
         System.out.println("1. Conectarse a un puerto");
-        System.out.println("2. Enviar caracter");
+        System.out.println("2. Enviar texto matriz de leds");
         System.out.println("3. Recibir caracter");
         System.out.println("4. Leer Sensor Temperatura");
         System.out.println("5. Salir");
