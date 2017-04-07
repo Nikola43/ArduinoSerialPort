@@ -358,7 +358,7 @@ public class ArduinoSerialPort implements SerialPortEventListener
     {
         int codigo;
 
-        codigo = parity * 13 + stopBits / 7 - baudRate * 16 + dataBits * 3; // Preguntar a Asun si puede usarse math.random
+        codigo = parity * 13 + stopBits / 7 - baudRate * 16 + dataBits * 3;
 
         return codigo;
     }
