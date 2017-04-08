@@ -3,6 +3,7 @@ package com.frtsoft;
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Scanner;
@@ -28,27 +29,29 @@ public class GestionSerialPort
     public ArrayList<String> getPuertosDisponibles()
     {
         ArrayList<String> puertosDisponibles = new ArrayList<>();
-        int contadorPuertos = 0;
+        CommPortIdentifier idPuertoSerie;
+        Enumeration puertosDelSistema;
 
-        Enumeration puertosDelSistema = CommPortIdentifier.getPortIdentifiers(); //Enum de los puertos del sistema
+        puertosDelSistema = CommPortIdentifier.getPortIdentifiers(); //Enum de los puertos del sistema
 
         //Si hay puertos...
         if ( puertosDelSistema.hasMoreElements() )
         {
-            while ( puertosDelSistema.hasMoreElements() ) //Mientras haya mas puertos en el sistema
+            //Mientras haya mas puertos en el sistema
+            while ( puertosDelSistema.hasMoreElements() )
             {
-                CommPortIdentifier portId = (CommPortIdentifier) puertosDelSistema.nextElement(); // Asignamos el id del puerto actual
+                idPuertoSerie = (CommPortIdentifier) puertosDelSistema.nextElement(); // Asignamos el id del puerto actual
 
                 //Si el puerto es de tipo serial
-                if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL)
+                if (idPuertoSerie.getPortType() == CommPortIdentifier.PORT_SERIAL)
                 {
-                    puertosDisponibles.add(contadorPuertos, portId.getName());
+                    puertosDisponibles.add(idPuertoSerie.getName());
                 }
             }
         }
         else
         {
-            System.out.println("\nError: No se detecta ningun puerto serie en el equipo");
+            System.out.println("\nNo se detecta ningun puerto serie en el equipo");
         }
         return puertosDisponibles;
     }
@@ -62,7 +65,7 @@ public class GestionSerialPort
     Entrada:
         ArrayList de string con los puertos disponibles en el sistema
     Precondiciones:
-        El array debe tener al menos un elemento
+        -
     Salida:
         Muestra por pantalla un arrayList de String con el nombre del los puertos disponibles en el sistema
     Postcondiciones:
@@ -84,7 +87,7 @@ public class GestionSerialPort
         }
         else
         {
-            System.out.println("No hay ningun puerto serie en el sistema.");
+            System.out.println("\nNo se detecta ningun puerto serie en el equipo");
         }
     }
     /*
@@ -163,8 +166,6 @@ public class GestionSerialPort
 
     public void conectarsePuertoSerie( ArduinoSerialPort arduino )
     {
-        System.out.println(".:| Conectarse a Puerto Serie |:.");
-
         arduino.setNombrePuerto(seleccionarPuerto()); // Asignamos nombre
         arduino.setBaudRate(seleccionarVelocidadTransmision()); // Asignamos velocidad
         arduino.setDataBits(8);
@@ -186,11 +187,11 @@ public class GestionSerialPort
             } while ( (caracterEnviado < 'a' || caracterEnviado > 'z') && (caracterEnviado < '0' || caracterEnviado > '9') );
 
             arduino.enviarCaracter(caracterEnviado);
-            Main.esperar(100);
+            esperar(100);
         }
         else
         {
-            System.out.println("\nError: Debe estar conectado a un puerto serie para enviar un caracter");
+            System.out.println("\nDebe estar conectado a un puerto serie para enviar un caracter");
         }
     }
 
@@ -204,29 +205,23 @@ public class GestionSerialPort
             {
                 System.out.print("Introduce una cadena de caracteres: ");
                 cadenaEnviada = scanner.nextLine();
-            } while ( cadenaEnviada.matches(".*([ \t]).*")== false );
+            } while ( cadenaEnviada.matches(".*([ \t]).*") == false );
 
             arduino.enviarString(cadenaEnviada);
-            Main.esperar(100);
-            arduino.enviarString(" ");
+            esperar(100);
+            arduino.enviarCaracter(' ');
         }
         else
         {
-            System.out.println("\nError: Debe estar conectado a un puerto serie para enviar un caracter");
+            System.out.println("\nDebe estar conectado a un puerto serie para enviar una cadena de caracteres");
         }
     }
 
     public void imprimirCaracterRecibidoPuertoSerie( ArduinoSerialPort arduino )
     {
-        int caracterRecibido;
         if ( arduino.getEstadoConexion() )
         {
-            do
-            {
-                caracterRecibido = arduino.getCaracterRecibido();
-                System.out.println("Caracter Recibido: "+ caracterRecibido);
-                Main.esperar(50);
-            } while (true);
+            System.out.println("Caracter Recibido: "+ arduino.getByteRecibido());
         }
         else
         {
@@ -236,19 +231,38 @@ public class GestionSerialPort
 
     public void imprimirValorSensorLuz( ArduinoSerialPort arduino )
     {
-        char luz;
+        int luz;
         if ( arduino.getEstadoConexion() )
         {
-            do
-            {
-                luz = arduino.getCaracterRecibido();
-                System.out.println("Sensor Luz: "+luz);
-                Main.esperar(1000);
-            } while (true);
+            luz = arduino.getByteRecibido();
+            System.out.println("Sensor Luz: "+luz);
+            esperar(100);
         }
         else
         {
             System.out.println("\nError: Debe estar conectado a un puerto serie para leer un caracter");
+        }
+    }
+
+    /*
+     INTERFAZ
+     Funcionamiento: Pausa el hilo de ejecucion un determinado tiempo
+     Prototipo: public static void esperar(int tiempo)
+     Entrada: Entero (tiempo)
+     Precondiciones: El entero debe ser mayor que 0
+     Salida:
+     Postcondiciones:
+     Entrada / Salida:
+     */
+    public static void esperar(int tiempo)
+    {
+        try
+        {
+            Thread.sleep(tiempo);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
         }
     }
 }

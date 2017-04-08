@@ -56,27 +56,6 @@ public class Main
             arduino.cerrarPuerto();
         }
     }
-    /*
-     INTERFAZ
-     Funcionamiento: Pausa el hilo de ejecucion un determinado tiempo
-     Prototipo: public static void esperar(int tiempo)
-     Entrada: Entero (tiempo)
-     Precondiciones: El entero debe ser mayor que 0
-     Salida:
-     Postcondiciones:
-     Entrada / Salida:
-     */
-    public static void esperar(int tiempo)
-    {
-        try
-        {
-            Thread.sleep(tiempo);
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
-    }
 
     //METODOS DE LA CLASE
     /*
