@@ -212,8 +212,8 @@ public class ArduinoSerialPort implements SerialPortEventListener
                             puerto.setSerialPortParams(baudRate, dataBits, stopBits, parity);
 
                             //Establecemos el flujo de entrada / salida entre el puerto serie y el sistema
-                            setFlujoEntrada(puerto.getInputStream());
-                            setFlujoSalida(puerto.getOutputStream());
+                            flujoEntrada = puerto.getInputStream();
+                            flujoSalida = puerto.getOutputStream();
 
                             //Creamos un listener para escuchar lo que manda el puerto serie al sistema
                             puerto.addEventListener(this);
@@ -240,9 +240,9 @@ public class ArduinoSerialPort implements SerialPortEventListener
         catch ( Exception e )
         {
             System.out.println("Error: Imposible abrir el puerto "+getNombrePuerto());
-            setPuerto(null);
-            setFlujoEntrada(null);
-            setFlujoSalida(null);
+            puerto = null;
+            flujoEntrada = null;
+            flujoSalida = null;
         }
     }
 
@@ -272,12 +272,10 @@ public class ArduinoSerialPort implements SerialPortEventListener
         {   //Comprobamos el tipo de evento del puerto serie
             if ( serialEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE )
             {
-                System.out.println("------");
                 // Comprobamos si hay datos disponibles antes de leerlos
                 if ( flujoEntrada.available() > 0 )
                 {
-                    byteRecibido = flujoEntrada.read();
-                    System.out.println(byteRecibido);
+                    byteRecibido = (char) flujoEntrada.read();
                 }
             }
         }
