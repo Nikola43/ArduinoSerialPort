@@ -1,3 +1,44 @@
+/*
+    CLASE Jugador
+
+    PROPIEDADES
+        BASICAS
+        	ID            : entero : consultable y modificable
+            nombre        : String : consultable y modificable
+            apellidos     : String : consultable y modificable
+
+        DERIVADAS
+            nombreUsuario : String : consultable
+
+        COMPARTIDAS
+            NINGUNA
+
+    RESTRICCIONES
+        El ID no puede ser negativo
+
+    INTERFAZ
+        METODOS CONSULTORES
+	        public int    getID()
+			public String getNombre()
+			public String getApellidos()
+
+        METODOS MODIFICADORES
+	        private void setID(int ID)
+			public  void setNombre(String nombre)
+			public  void setApellidos(String apellidos)
+
+        METODOS HEREDADOS
+            public String  toString()
+            public int     hashCode()
+            public Usuario clone()
+            public boolean equals(Object object)
+            public int     compareTo(Clases.Usuario usuario)
+
+        METODOS AÑADIDOS
+        	public String generarNombreUsuario()
+        METODOS AÑADIDOS
+*/
+
 package com.frtsoft;
 
 //Importar clases para manejar el puerto serie
@@ -337,7 +378,7 @@ public class ArduinoSerialPort implements SerialPortEventListener
     {
         int codigo;
 
-        codigo = parity * 13 + stopBits / 7 - baudRate * 16 + dataBits * 3;
+        codigo = parity * 13 + stopBits / 7 - baudRate * 16 + dataBits * 3; // Preguntar a Asun si puede usarse math.random
 
         return codigo;
     }

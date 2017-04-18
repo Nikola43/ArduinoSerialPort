@@ -2,8 +2,6 @@ package com.frtsoft;
 
 import gnu.io.CommPortIdentifier;
 import gnu.io.SerialPort;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Scanner;
@@ -110,21 +108,18 @@ public class GestionSerialPort
     {
         int puertoSeleccionado = 0;
         Scanner scanner = new Scanner(System.in);
-        ArrayList<String> puertosDisponibles;
 
-        puertosDisponibles = getPuertosDisponibles();
-
-        if ( puertosDisponibles.size() > 0 )
+        if ( getPuertosDisponibles().size() > 0 )
         {
             do
             {
-                mostrarPuertosDisponibles(puertosDisponibles);
+                mostrarPuertosDisponibles(getPuertosDisponibles());
 
                 System.out.print("\nIntroduce el puerto al que desea conectarse: ");
                 puertoSeleccionado = scanner.nextInt();
-            } while (puertoSeleccionado < 1 || puertoSeleccionado > puertosDisponibles.size());
+            } while (puertoSeleccionado < 1 || puertoSeleccionado > getPuertosDisponibles().size());
         }
-        return (puertosDisponibles.get(puertoSeleccionado - 1));
+        return (getPuertosDisponibles().get(puertoSeleccionado - 1));
     }
 
     /*
