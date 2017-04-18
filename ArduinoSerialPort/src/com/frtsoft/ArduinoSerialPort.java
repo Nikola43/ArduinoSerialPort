@@ -18,10 +18,9 @@ public class ArduinoSerialPort implements SerialPortEventListener
     private SerialPort puerto;          //Definimos el puerto serie
     private String nombrePuerto;        //Nombre del puerto serie (Como lo reconoce el sistema)
     private boolean estadoConexion;     //booleano para saber si esta conectado o no
-    private char caracterRecibido;      //Datos recibidos del puerto serie
-    private char caracterEnviado;       //Datos enviados al puerto serie
     private InputStream flujoEntrada;   //Permite leer del puerto serie
     private OutputStream flujoSalida;   //Permite escribir en el puerto serie
+    private int byteRecibido;
 
     //Configuracion de la conexion
     private int baudRate;  // Velocidad de transmision en bits por segundo
@@ -34,14 +33,12 @@ public class ArduinoSerialPort implements SerialPortEventListener
     public ArduinoSerialPort()
     {
         puerto  = null;
-        nombrePuerto = "COM3";
+        nombrePuerto = null;
         estadoConexion = false;
-        baudRate = 9600;
-        dataBits = 8;
-        parity = SerialPort.PARITY_NONE;
-        stopBits = SerialPort.STOPBITS_1;
-        caracterRecibido = 0;
-        caracterEnviado = 0;
+        baudRate = 0;
+        dataBits = 0;
+        parity = 0;
+        stopBits = 0;
         flujoEntrada = null;
         flujoSalida = null;
     }
@@ -54,8 +51,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
                              int dataBits,
                              int parity,
                              int stopBits,
-                             char caracterRecibido,
-                             char caracterEnviado,
                              InputStream flujoEntrada,
                              OutputStream flujoSalida)
     {
@@ -66,8 +61,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
         this.dataBits = dataBits;
         this.parity = parity;
         this.stopBits = stopBits;
-        this.caracterRecibido = caracterRecibido;
-        this.caracterEnviado = caracterEnviado;
         this.flujoEntrada = flujoEntrada;
         this.flujoSalida = flujoSalida;
     }
@@ -75,15 +68,13 @@ public class ArduinoSerialPort implements SerialPortEventListener
     // Contructor de copia
     public ArduinoSerialPort(ArduinoSerialPort arduinoSerialPort)
     {
-        this.puerto = arduinoSerialPort.puerto;
-        this.nombrePuerto = arduinoSerialPort.nombrePuerto;
-        this.estadoConexion = arduinoSerialPort.estadoConexion;
-        this.baudRate = arduinoSerialPort.baudRate;
-        this.dataBits = arduinoSerialPort.dataBits;
-        this.parity = arduinoSerialPort.parity;
-        this.stopBits = arduinoSerialPort.stopBits;
-        this.caracterEnviado = arduinoSerialPort.caracterEnviado;
-        this.caracterRecibido = arduinoSerialPort.caracterRecibido;
+        this.puerto = arduinoSerialPort.getPuerto();
+        this.nombrePuerto = arduinoSerialPort.getNombrePuerto();
+        this.estadoConexion = arduinoSerialPort.getEstadoConexion();
+        this.baudRate = arduinoSerialPort.getBaudRate();
+        this.dataBits = arduinoSerialPort.getDataBits();
+        this.parity = arduinoSerialPort.getParity();
+        this.stopBits = arduinoSerialPort.getStopBits();
         this.flujoEntrada = arduinoSerialPort.flujoEntrada;
         this.flujoSalida = arduinoSerialPort.flujoSalida;
     }
@@ -98,8 +89,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
         dataBits = 8;
         parity = SerialPort.PARITY_NONE;
         stopBits = SerialPort.STOPBITS_1;
-        caracterEnviado = 0;
-        caracterRecibido = 0;
         flujoEntrada = null;
         flujoSalida = null;
     }
@@ -133,19 +122,15 @@ public class ArduinoSerialPort implements SerialPortEventListener
     {
         return stopBits;
     }
-    public char getCaracterRecibido()
+    public int getByteRecibido()
     {
-        return caracterRecibido;
+        return byteRecibido;
     }
-    public char getCaracterEnviado()
-    {
-        return caracterEnviado;
-    }
-    private InputStream getFlujoEntrada()
+    public InputStream getFlujoEntrada()
     {
         return flujoEntrada;
     }
-    private OutputStream getFlujoSalida()
+    public OutputStream getFlujoSalida()
     {
         return flujoSalida;
     }
@@ -178,14 +163,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
     {
         this.stopBits = stopBits;
     }
-    public void setCaracterEnviado(char caracterEnviado)
-    {
-        this.caracterEnviado = caracterEnviado;
-    }
-    public void setCaracterRecibido(char caracterRecibido)
-    {
-        this.caracterRecibido = caracterRecibido;
-    }
     private void setFlujoEntrada(InputStream flujoEntrada)
     {
         this.flujoEntrada = flujoEntrada;
@@ -215,34 +192,42 @@ public class ArduinoSerialPort implements SerialPortEventListener
             Enumeration puertosDelSistema = CommPortIdentifier.getPortIdentifiers(); //Enum de los puertos del sistema
             while (puertosDelSistema.hasMoreElements()) //Mientras haya mas puertos en el sistema
             {
-                CommPortIdentifier portId = (CommPortIdentifier) puertosDelSistema.nextElement(); // Asignamos el id del puerto actual
+                CommPortIdentifier idPuertoSerie = (CommPortIdentifier) puertosDelSistema.nextElement(); // Asignamos el id del puerto actual
 
                 //Si el puerto es de tipo serial
-                if (portId.getPortType() == CommPortIdentifier.PORT_SERIAL)
+                if (idPuertoSerie.getPortType() == CommPortIdentifier.PORT_SERIAL)
                 {
                     //Si el nombre del puerto es igual al nombre del puerto al que nos queremos conectar
-                    if (portId.getName().equals(nombrePuerto))
+                    if (idPuertoSerie.getName().equals(nombrePuerto))
                     {
-                        if ( portId.isCurrentlyOwned() == false )
+                        // Si el puerto no esta en uso
+                        if ( idPuertoSerie.isCurrentlyOwned() == false )
                         {
-                            puerto = (SerialPort) portId.open("arduino serial", 2000); //Abrimos el puerto
+                            //Abrimos el puerto
+                            puerto = (SerialPort) idPuertoSerie.open("arduino serial", 2000);
 
+                            //Configuramos la conexion
                             puerto.disableReceiveThreshold();
                             puerto.enableReceiveTimeout(3000);
                             puerto.setSerialPortParams(baudRate, dataBits, stopBits, parity);
 
-                            setFlujoEntrada(getPuerto().getInputStream());
-                            setFlujoSalida(getPuerto().getOutputStream());
+                            //Establecemos el flujo de entrada / salida entre el puerto serie y el sistema
+                            flujoEntrada = puerto.getInputStream();
+                            flujoSalida = puerto.getOutputStream();
 
+                            //Creamos un listener para escuchar lo que manda el puerto serie al sistema
                             puerto.addEventListener(this);
                             puerto.notifyOnDataAvailable(true);
 
-                            System.out.println("Conexion del puerto " + getNombrePuerto() + " realizada correctamente");
-                            estadoConexion = true;
+                            if ( puerto != null )
+                            {
+                                System.out.println("Conexion del puerto " + getNombrePuerto() + " realizada correctamente");
+                                estadoConexion = true;
+                            }
                         }
                         else
                         {
-                            System.out.println("Error: El puerto serie "+portId.getName()+" ya esta en uso");
+                            System.out.println("Error: El puerto serie "+idPuertoSerie.getName()+" ya esta en uso");
                         }
                     }
                     else
@@ -255,10 +240,9 @@ public class ArduinoSerialPort implements SerialPortEventListener
         catch ( Exception e )
         {
             System.out.println("Error: Imposible abrir el puerto "+getNombrePuerto());
-            e.printStackTrace();
-            setPuerto(null);
-            setFlujoEntrada(null);
-            setFlujoSalida(null);
+            puerto = null;
+            flujoEntrada = null;
+            flujoSalida = null;
         }
     }
 
@@ -278,7 +262,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
             catch (IOException e)
             {
                 System.out.println("Error: No se ha cerrado la conexion correctamente");
-                e.printStackTrace();
             }
         }
     }
@@ -292,14 +275,13 @@ public class ArduinoSerialPort implements SerialPortEventListener
                 // Comprobamos si hay datos disponibles antes de leerlos
                 if ( flujoEntrada.available() > 0 )
                 {
-                    caracterRecibido = (char) flujoEntrada.read();
+                    byteRecibido = (char) flujoEntrada.read();
                 }
             }
         }
         catch (IOException e)
         {
             System.out.println("Error: No se ha podido leer datos del puerto serie");
-            e.printStackTrace();
         }
     }
 
@@ -308,12 +290,10 @@ public class ArduinoSerialPort implements SerialPortEventListener
         try
         {
             flujoSalida.write(caracter);
-            caracterEnviado = caracter;
         }
         catch (IOException e)
         {
             System.out.println("Error: No se ha enviado '"+caracter+"' correctamente");
-            e.printStackTrace();
         }
     }
 
@@ -326,7 +306,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
         catch (IOException e)
         {
             System.out.println("Error: No se ha enviado '"+cadena+"' correctamente");
-            e.printStackTrace();
         }
     }
 
@@ -334,7 +313,7 @@ public class ArduinoSerialPort implements SerialPortEventListener
     @Override
     public String toString()
     {
-        return (puerto.toString()+", "+nombrePuerto+", "+estadoConexion+", "+baudRate+", "+dataBits+", "+parity+", "+stopBits+", "+caracterEnviado+", "+caracterRecibido+", "+flujoEntrada.toString()+", "+flujoSalida.toString() );
+        return (puerto.toString()+", "+nombrePuerto+", "+estadoConexion+", "+baudRate+", "+dataBits+", "+parity+", "+stopBits+", "+byteRecibido+", "+flujoEntrada.toString()+", "+flujoSalida.toString() );
     }
 
     @Override
