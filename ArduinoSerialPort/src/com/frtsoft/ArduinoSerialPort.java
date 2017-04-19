@@ -3,41 +3,32 @@
 
     PROPIEDADES
         BASICAS
-        	ID            : entero : consultable y modificable
-            nombre        : String : consultable y modificable
-            apellidos     : String : consultable y modificable
+            NINGUNA
 
         DERIVADAS
-            nombreUsuario : String : consultable
+            NINGUNA
 
         COMPARTIDAS
             NINGUNA
 
     RESTRICCIONES
-        El ID no puede ser negativo
+        NINGUNA
 
     INTERFAZ
         METODOS CONSULTORES
-	        public int    getID()
-			public String getNombre()
-			public String getApellidos()
 
         METODOS MODIFICADORES
-	        private void setID(int ID)
-			public  void setNombre(String nombre)
-			public  void setApellidos(String apellidos)
 
         METODOS HEREDADOS
-            public String  toString()
-            public int     hashCode()
-            public Usuario clone()
+            public String toString()
+            public int hashCode()
+            public ArduinoSerialPort clone()
             public boolean equals(Object object)
-            public int     compareTo(Clases.Usuario usuario)
+            public int compareTo(ArduinoSerialPort arduinoSerialPort)
 
         METODOS AÑADIDOS
-        	public String generarNombreUsuario()
-        METODOS AÑADIDOS
 */
+
 
 package com.frtsoft;
 
@@ -55,7 +46,8 @@ import java.util.Enumeration; //Enum de puertos
 
 public class ArduinoSerialPort implements SerialPortEventListener
 {
-    // Atributos
+//------------------------------- PROPIEDADES -----------------------------------------------//
+    //BASICAS
     private SerialPort puerto;          //Definimos el puerto serie
     private String nombrePuerto;        //Nombre del puerto serie (Como lo reconoce el sistema)
     private boolean estadoConexion;     //booleano para saber si esta conectado o no
@@ -69,8 +61,15 @@ public class ArduinoSerialPort implements SerialPortEventListener
     private int parity;    //Sin paridad
     private int stopBits;  // Usamos 1 bit control
 
-    //CONTRUCTORES
-    // Contructor vacio
+    //DERIVADAS
+    //NINGUNA
+
+    //COMPARTIDAS
+    //NINGUNA
+//------------------------------- FIN PROPIEDADES --------------------------------------------//
+
+//------------------------------- CONSTRUCTORES ----------------------------------------------//
+    //CONSTRUCTOR POR DEFECTO
     public ArduinoSerialPort()
     {
         puerto  = null;
@@ -84,7 +83,7 @@ public class ArduinoSerialPort implements SerialPortEventListener
         flujoSalida = null;
     }
 
-    // Contructor con parametros
+    //CONSTRUCTOR SOBRECARGADO
     public ArduinoSerialPort(SerialPort puerto,
                              String nombrePuerto,
                              boolean estadoConexion,
@@ -106,7 +105,7 @@ public class ArduinoSerialPort implements SerialPortEventListener
         this.flujoSalida = flujoSalida;
     }
 
-    // Contructor de copia
+    //CONSTRUCTOR DE COPIA
     public ArduinoSerialPort(ArduinoSerialPort arduinoSerialPort)
     {
         this.puerto = arduinoSerialPort.getPuerto();
@@ -119,26 +118,13 @@ public class ArduinoSerialPort implements SerialPortEventListener
         this.flujoEntrada = arduinoSerialPort.flujoEntrada;
         this.flujoSalida = arduinoSerialPort.flujoSalida;
     }
+//------------------------------- FIN CONSTRUCTORES ------------------------------------------//
 
-    //Constructor solo con nombre del puerto y velocidad de transmision
-    public ArduinoSerialPort(String nombrePuerto, int baudRate)
-    {
-        puerto  = null;
-        this.nombrePuerto = nombrePuerto;
-        estadoConexion = false;
-        this.baudRate = baudRate;
-        dataBits = 8;
-        parity = SerialPort.PARITY_NONE;
-        stopBits = SerialPort.STOPBITS_1;
-        flujoEntrada = null;
-        flujoSalida = null;
-    }
-
-    //Metodos consultores
+//------------------------------- METODOS CONSULTORES ----------------------------------------//
     public SerialPort getPuerto()
-    {
-        return puerto;
-    }
+{
+    return puerto;
+}
     public String getNombrePuerto()
     {
         return nombrePuerto;
@@ -175,11 +161,12 @@ public class ArduinoSerialPort implements SerialPortEventListener
     {
         return flujoSalida;
     }
+//------------------------------- FIN METODOS CONSULTORES ------------------------------------//
 
-    //Metodos modificadores
-    public void setPuerto(SerialPort puerto) {
-        this.puerto = puerto;
-    }
+//------------------------------- METODOS MODIFICADORES --------------------------------------//
+public void setPuerto(SerialPort puerto) {
+    this.puerto = puerto;
+}
     public void setNombrePuerto(String nombrePuerto)
     {
         this.nombrePuerto = nombrePuerto;
@@ -212,8 +199,76 @@ public class ArduinoSerialPort implements SerialPortEventListener
     {
         this.flujoSalida = flujoSalida;
     }
+//------------------------------- FIN METODOS MODIFICADORES ----------------------------------//
 
-    //METODOS DE LA CLASE
+//------------------------------- METODOS HEREDADOS ------------------------------------------//
+@Override
+public String toString()
+{
+    return (puerto.toString()+", "+nombrePuerto+", "+estadoConexion+", "+baudRate+", "+dataBits+", "+parity+", "+stopBits+", "+byteRecibido+", "+flujoEntrada.toString()+", "+flujoSalida.toString() );
+}
+
+    @Override
+    public ArduinoSerialPort clone()
+    {
+        ArduinoSerialPort copia = null;
+
+        try
+        {
+            copia = (ArduinoSerialPort) super.clone();
+        }
+        catch (CloneNotSupportedException error)
+        {
+            System.out.println("Error: No se pudo clonar el puerto serie");
+        }
+        return copia;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int codigo;
+
+        codigo = parity * 13 + stopBits / 7 - baudRate * 16 + dataBits * 3; // Preguntar a Asun si puede usarse math.random
+
+        return codigo;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        boolean igual = false;
+
+        // Seran iguales  cuando tengan el mismo nombre en el sistema
+        if (o != null && o instanceof ArduinoSerialPort)
+        {
+            ArduinoSerialPort a = (ArduinoSerialPort) o;
+
+            if ( nombrePuerto.equals(a.getNombrePuerto()) )
+            {
+                igual = true;
+            }
+        }
+        return igual;
+    }
+
+    public int compareTo(ArduinoSerialPort arduinoSerialPort)
+    {
+        int comparacion;
+
+        if (getNombrePuerto().equals(arduinoSerialPort.getNombrePuerto()))
+        {
+            comparacion = 0;
+        }
+        else
+        {
+            comparacion = 1;
+        }
+        return comparacion;
+    }
+//------------------------------- FIN METODOS HEREDADOS --------------------------------------//
+
+//------------------------------- METODOS AÑADIDOS -------------------------------------------//
     /*
     INTERFAZ
     Funcionamiento: Inicia la comunicacion con el puerto serie
@@ -349,70 +404,5 @@ public class ArduinoSerialPort implements SerialPortEventListener
             System.out.println("Error: No se ha enviado '"+cadena+"' correctamente");
         }
     }
-
-    // METODOS HEREDADOS
-    @Override
-    public String toString()
-    {
-        return (puerto.toString()+", "+nombrePuerto+", "+estadoConexion+", "+baudRate+", "+dataBits+", "+parity+", "+stopBits+", "+byteRecibido+", "+flujoEntrada.toString()+", "+flujoSalida.toString() );
-    }
-
-    @Override
-    public ArduinoSerialPort clone()
-    {
-        ArduinoSerialPort copia = null;
-
-        try
-        {
-            copia = (ArduinoSerialPort) super.clone();
-        }
-        catch (CloneNotSupportedException error)
-        {
-            System.out.println("Error: No se pudo clonar el puerto serie");
-        }
-        return copia;
-    }
-
-    @Override
-    public int hashCode()
-    {
-        int codigo;
-
-        codigo = parity * 13 + stopBits / 7 - baudRate * 16 + dataBits * 3; // Preguntar a Asun si puede usarse math.random
-
-        return codigo;
-    }
-
-    @Override
-    public boolean equals(Object o)
-    {
-        boolean igual = false;
-
-        // Seran iguales  cuando tengan el mismo nombre en el sistema
-        if (o != null && o instanceof ArduinoSerialPort)
-        {
-            ArduinoSerialPort a = (ArduinoSerialPort) o;
-
-            if ( nombrePuerto.equals(a.getNombrePuerto()) )
-            {
-                igual = true;
-            }
-        }
-        return igual;
-    }
-
-    public int compareTo(ArduinoSerialPort p)
-    {
-        int comparacion;
-
-        if (getNombrePuerto().equals(p.getNombrePuerto()))
-        {
-            comparacion = 0;
-        }
-        else
-        {
-            comparacion = 1;
-        }
-        return comparacion;
-    }
+//------------------------------- FIN METODOS AÑADIDOS ---------------------------------------//
 }

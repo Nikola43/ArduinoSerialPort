@@ -11,7 +11,7 @@ public class GestionSerialPort
     /*
     INTERFAZ
     Descripcion:
-        Devuelve los puertos serie disponibles en el sistema
+        Busca puertos serie en el equipo, devuelve los puertos disponibles en el sistema
     Prototipo:
         public ArrayList<String> getPuertosDisponibles()
     Entradas:
@@ -19,9 +19,9 @@ public class GestionSerialPort
     Precondiciones:
         -
     Salida:
-        Devuelve un arrayList de String con el nombre del los puertos disponibles en el sistema
+        Devuelve un arrayList de String con el nombre de los puertos disponibles en el sistema
     Postcondiciones:
-        Los nombres del los puertos seran nombres de puerto existente en el sistema
+        Los nombres del los puertos seran nombres de puertos existentes en el sistema
     Entrada / Salida:
     */
     public ArrayList<String> getPuertosDisponibles()
@@ -57,17 +57,17 @@ public class GestionSerialPort
     /*
     INTERFAZ
     Descripcion:
-        Muestra por pantalla los puertos serie disponibles en el sistema
+        Muestra por pantalla un arrayList de String con el nombre de los puertos disponibles en el sistema
     Prototipo:
         public void mostrarPuertosDisponibles ( ArrayList<String> puertosDisponibles )
     Entrada:
-        ArrayList de string con los puertos disponibles en el sistema
+        ArrayList de string con los puertos del sistema
     Precondiciones:
         -
     Salida:
-        Muestra por pantalla un arrayList de String con el nombre del los puertos disponibles en el sistema
+        -
     Postcondiciones:
-        Los nombres del los puertos seran nombres de puerto existente en el sistema
+        -
     Entrada / Salida:
     */
     public void mostrarPuertosDisponibles ( ArrayList<String> puertosDisponibles )
@@ -88,6 +88,7 @@ public class GestionSerialPort
             System.out.println("\nNo se detecta ningun puerto serie en el equipo");
         }
     }
+
     /*
     INTERFAZ
     Descripcion:
@@ -135,7 +136,7 @@ public class GestionSerialPort
     Salida:
         Devuelve un entero con la velocidad seleccionada
     Postcondiciones:
-        La velocidad debe ser una de las mostradas al usuario
+        La velocidad seleccionada debe ser una de las mostradas al usuario
     Entrada / Salida:
     */
     public int seleccionarVelocidadTransmision()
