@@ -74,7 +74,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
     {
         puerto  = null;
         nombrePuerto = null;
-        estadoConexion = false;
         baudRate = 0;
         dataBits = 0;
         parity = 0;
@@ -86,7 +85,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
     //CONSTRUCTOR SOBRECARGADO
     public ArduinoSerialPort(SerialPort puerto,
                              String nombrePuerto,
-                             boolean estadoConexion,
                              int baudRate,
                              int dataBits,
                              int parity,
@@ -96,7 +94,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
     {
         this.puerto = puerto;
         this.nombrePuerto = nombrePuerto;
-        this.estadoConexion = estadoConexion;
         this.baudRate = baudRate;
         this.dataBits = dataBits;
         this.parity = parity;
@@ -110,7 +107,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
     {
         this.puerto = arduinoSerialPort.getPuerto();
         this.nombrePuerto = arduinoSerialPort.getNombrePuerto();
-        this.estadoConexion = arduinoSerialPort.getEstadoConexion();
         this.baudRate = arduinoSerialPort.getBaudRate();
         this.dataBits = arduinoSerialPort.getDataBits();
         this.parity = arduinoSerialPort.getParity();
@@ -128,10 +124,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
     public String getNombrePuerto()
     {
         return nombrePuerto;
-    }
-    public boolean getEstadoConexion()
-    {
-        return estadoConexion;
     }
     public int getBaudRate()
     {
@@ -171,10 +163,6 @@ public void setPuerto(SerialPort puerto) {
     {
         this.nombrePuerto = nombrePuerto;
     }
-    public void setEstadoConexion(boolean estadoConexion)
-    {
-        this.estadoConexion = estadoConexion;
-    }
     public void setBaudRate(int baudRate)
     {
         this.baudRate = baudRate;
@@ -205,7 +193,7 @@ public void setPuerto(SerialPort puerto) {
 @Override
 public String toString()
 {
-    return (puerto.toString()+", "+nombrePuerto+", "+estadoConexion+", "+baudRate+", "+dataBits+", "+parity+", "+stopBits+", "+byteRecibido+", "+flujoEntrada.toString()+", "+flujoSalida.toString() );
+    return (puerto.toString()+", "+nombrePuerto+","+baudRate+", "+dataBits+", "+parity+", "+stopBits+", "+byteRecibido+", "+flujoEntrada.toString()+", "+flujoSalida.toString() );
 }
 
     @Override
@@ -271,17 +259,23 @@ public String toString()
 //------------------------------- METODOS AÑADIDOS -------------------------------------------//
     /*
     INTERFAZ
-    Funcionamiento: Inicia la comunicacion con el puerto serie
-    Prototipo: public boolean abrirPuerto()
+    Funcionamiento:
+        Inicia la comunicacion con el puerto serie
+    Prototipo:
+        public int abrirPuerto()
     Entrada:
+
     Precondiciones:
-    Salida: Devuelve el estado de la conexion despues de la llamada al metodo, si se ha conectado correctamente o no
-    Postcondiciones: La salida sera verdadero si se ha conectado y falso y no se ha podido realizar la conexion
+
+    Salida:
+        Un entero
+    Postcondiciones:
+        Devolvera un entero segun
     Entrada / Salida:
     */
-    public void abrirPuerto()
+    public int abrirPuerto()
     {
-        estadoConexion = false; // false = no conectado // true = conectado
+        int resultadoConexion = 3;
 
         try
         {
@@ -317,18 +311,18 @@ public String toString()
 
                             if ( puerto != null )
                             {
-                                System.out.println("Conexion del puerto " + getNombrePuerto() + " realizada correctamente");
+                                resultadoConexion = 1;
                                 estadoConexion = true;
                             }
                         }
                         else
                         {
-                            System.out.println("Error: El puerto serie "+idPuertoSerie.getName()+" ya esta en uso");
+                            resultadoConexion = 2;
                         }
                     }
                     else
                     {
-                        System.out.println("Error: No se encuentra el puerto "+getNombrePuerto());
+                        resultadoConexion = 3;
                     }
                 }
             }
@@ -340,26 +334,30 @@ public String toString()
             flujoEntrada = null;
             flujoSalida = null;
         }
+        return resultadoConexion;
     }
 
-    public void cerrarPuerto()
+    public boolean cerrarPuerto()
     {
+        boolean estadoDesconexion = false;
         // Si el puerto esta abierto es que es distinto de null
         if ( puerto != null)
         {
             try
             {
-                puerto.removeEventListener(); //Eliminamos el escuchador de eventos
-                puerto.close();        //Cerramos el puerto
+
                 flujoEntrada.close();   //Cerramos el flujo de entrada
                 flujoSalida.close();  //Cerramos el flujo de salida
-                System.out.println("Desconexion del puerto "+getNombrePuerto()+" realizada correctamente");
+                puerto.removeEventListener(); //Eliminamos el escuchador de eventos
+                puerto.close();        //Cerramos el puerto
+                estadoDesconexion = true;
             }
             catch (IOException e)
             {
                 System.out.println("Error: No se ha cerrado la conexion correctamente");
             }
         }
+        return estadoDesconexion;
     }
 
     synchronized public void serialEvent(SerialPortEvent serialEvent)

@@ -11,7 +11,7 @@ public class GestionSerialPort
     /*
     INTERFAZ
     Descripcion:
-        Busca puertos serie en el equipo, devuelve los puertos disponibles en el sistema
+        Busca puertos serie en el sistema, devuelve los puertos disponibles en el sistema
     Prototipo:
         public ArrayList<String> getPuertosDisponibles()
     Entradas:
@@ -19,12 +19,12 @@ public class GestionSerialPort
     Precondiciones:
         -
     Salida:
-        Devuelve un arrayList de String con el nombre de los puertos disponibles en el sistema
+        ArrayList de String
     Postcondiciones:
-        Los nombres del los puertos seran nombres de puertos existentes en el sistema
+        Devolvera una lista con los nombres de los puertos detectados en el sistema
     Entrada / Salida:
     */
-    public ArrayList<String> getPuertosDisponibles()
+    public ArrayList<String> detectarPuertosDisponibles()
     {
         ArrayList<String> puertosDisponibles = new ArrayList<>();
         CommPortIdentifier idPuertoSerie;
@@ -46,10 +46,6 @@ public class GestionSerialPort
                     puertosDisponibles.add(idPuertoSerie.getName());
                 }
             }
-        }
-        else
-        {
-            System.out.println("\nNo se detecta ningun puerto serie en el equipo");
         }
         return puertosDisponibles;
     }
@@ -107,20 +103,29 @@ public class GestionSerialPort
     */
     public String seleccionarPuerto()
     {
-        int puertoSeleccionado = 0;
+        ArrayList<String> puertosDisponibles;
         Scanner scanner = new Scanner(System.in);
 
-        if ( getPuertosDisponibles().size() > 0 )
+        int puertoSeleccionado = 0;
+        int numeroPuertosDisponibles = 0;
+
+        //Detectamos los puertos del sistema
+        puertosDisponibles = detectarPuertosDisponibles();
+        numeroPuertosDisponibles = puertosDisponibles.size();
+
+        //Si hay al menos un puerto
+        if ( numeroPuertosDisponibles >= 1 )
         {
+            //Mostramos los puertos al usuario y le pedimos que seleccione uno
             do
             {
-                mostrarPuertosDisponibles(getPuertosDisponibles());
+                mostrarPuertosDisponibles(puertosDisponibles);
 
                 System.out.print("\nIntroduce el puerto al que desea conectarse: ");
                 puertoSeleccionado = scanner.nextInt();
-            } while (puertoSeleccionado < 1 || puertoSeleccionado > getPuertosDisponibles().size());
+            } while (puertoSeleccionado < 1 || puertoSeleccionado > numeroPuertosDisponibles );
         }
-        return (getPuertosDisponibles().get(puertoSeleccionado - 1));
+        return (puertosDisponibles.get(puertoSeleccionado - 1));
     }
 
     /*
@@ -141,18 +146,22 @@ public class GestionSerialPort
     */
     public int seleccionarVelocidadTransmision()
     {
+        Scanner scanner = new Scanner(System.in);
+
+        //Array con las velocidades permitidas
         final int[] rangoBaudRate = { 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 115200 };
         int velocidadElegida;
-        Scanner scanner = new Scanner(System.in);
 
         do
         {
+            //Mostramos las velocidades permitidas
             System.out.print("\nVelocidades disponibles: \n");
-
             for (int indiceVelocidades = 0; indiceVelocidades < rangoBaudRate.length; indiceVelocidades++)
             {
                 System.out.println((indiceVelocidades + 1) + ". " + rangoBaudRate[indiceVelocidades]);
             }
+
+            //Pedimos al usuario que seleccione una de esas velocidades
             System.out.print("\nIntroduce la velocidad que deseas establecer para la conexion: ");
             velocidadElegida = scanner.nextInt();
         } while ( velocidadElegida < 0 || velocidadElegida > rangoBaudRate.length );
@@ -160,84 +169,60 @@ public class GestionSerialPort
         return rangoBaudRate[velocidadElegida - 1];
     }
 
-    public void conectarsePuertoSerie( ArduinoSerialPort arduino )
+    public int conectarsePuertoSerie( ArduinoSerialPort arduino )
     {
-        arduino.setNombrePuerto(seleccionarPuerto()); // Asignamos nombre
-        arduino.setBaudRate(seleccionarVelocidadTransmision()); // Asignamos velocidad
+        int resultadoConexion = 0;
+
+        //Pedimos al usuario que seleccione el puerto al que se quiere conectar
+        //y la velocidad de transmision con la que quiere enviar / recibir los datos
+        String nombrePuerto = seleccionarPuerto();
+        int velocidadTransmision = seleccionarVelocidadTransmision();
+
+        //Configuramos el puerto y la conexion
+        arduino.setNombrePuerto(nombrePuerto);
+        arduino.setBaudRate(velocidadTransmision);
         arduino.setDataBits(8);
         arduino.setParity(SerialPort.PARITY_NONE);
         arduino.setStopBits(SerialPort.STOPBITS_1);
-        arduino.abrirPuerto();
+
+        //Abrimos el puerto serie
+        resultadoConexion = arduino.abrirPuerto();
+
+        return (resultadoConexion);
     }
 
     public void enviarCaracterPuertoSerie( ArduinoSerialPort arduino )
     {
         char caracterEnviado;
         Scanner scanner = new Scanner(System.in);
-        if ( arduino.getEstadoConexion() )
-        {
-            do
-            {
-                System.out.print("Introduce un caracter de la a-z o 0-9: ");
-                caracterEnviado = scanner.next().charAt(0);
-            } while ( (caracterEnviado < 'a' || caracterEnviado > 'z') && (caracterEnviado < '0' || caracterEnviado > '9') );
 
-            arduino.enviarCaracter(caracterEnviado);
-            esperar(100);
-        }
-        else
+        //Pedimos al usuario que introduzca el caracter que quiere enviar
+        do
         {
-            System.out.println("\nDebe estar conectado a un puerto serie para enviar un caracter");
-        }
+            System.out.print("Introduce un caracter de la a-z o 0-9: ");
+            caracterEnviado = scanner.next().charAt(0);
+        } while ( (caracterEnviado < 'a' || caracterEnviado > 'z') && (caracterEnviado < '0' || caracterEnviado > '9') );
+
+        //Enviamos el caracter que introdujo el usuario
+        arduino.enviarCaracter(caracterEnviado);
+        esperar(100);
     }
 
     public void enviarCadenaPuertoSerie( ArduinoSerialPort arduino )
     {
         String cadenaEnviada;
         Scanner scanner = new Scanner(System.in);
-        if ( arduino.getEstadoConexion() )
-        {
-            do
-            {
-                System.out.print("Introduce una cadena de caracteres: ");
-                cadenaEnviada = scanner.nextLine();
-            } while ( cadenaEnviada.matches(".*([ \t]).*") == false );
 
-            arduino.enviarString(cadenaEnviada);
-            esperar(100);
-            arduino.enviarCaracter(' ');
-        }
-        else
+        //Pedimos al usuario que introduzca la cadena que quiere enviar
+        do
         {
-            System.out.println("\nDebe estar conectado a un puerto serie para enviar una cadena de caracteres");
-        }
-    }
+            System.out.print("Introduce una cadena de caracteres: ");
+            cadenaEnviada = scanner.nextLine();
+        } while ( cadenaEnviada.matches(".*([ \t]).*") == false );
 
-    public void imprimirCaracterRecibidoPuertoSerie( ArduinoSerialPort arduino )
-    {
-        if ( arduino.getEstadoConexion() )
-        {
-            System.out.println("Caracter Recibido: "+ arduino.getByteRecibido());
-        }
-        else
-        {
-            System.out.println("\nError: Debe estar conectado a un puerto serie para leer un caracter");
-        }
-    }
-
-    public void imprimirValorSensorLuz( ArduinoSerialPort arduino )
-    {
-        int luz;
-        if ( arduino.getEstadoConexion() )
-        {
-            luz = arduino.getByteRecibido();
-            System.out.println("Sensor Luz: "+luz);
-            esperar(100);
-        }
-        else
-        {
-            System.out.println("\nError: Debe estar conectado a un puerto serie para leer un caracter");
-        }
+        //Enviamos la cadena que introdujo el usuario
+        arduino.enviarString(cadenaEnviada+" ");
+        esperar(100);
     }
 
     /*

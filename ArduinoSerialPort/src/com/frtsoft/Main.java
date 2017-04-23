@@ -8,6 +8,8 @@ public class Main
     {
         //Variables para manejar el puerto serie
         ArduinoSerialPort arduino = new ArduinoSerialPort();
+        boolean estadoConexion = false;
+        int resultadoConexion;
         char caracterEnviado;
         char temperatura;
         int opcionConexion;
@@ -35,23 +37,65 @@ public class Main
                 switch (opcionMenuPrincipal)
                 {
                     //MODULO CONECTARSE A PUERTO SERIE
-                    case 1: gestionSerialPort.conectarsePuertoSerie(arduino); break;
+                    case 1:
+                        resultadoConexion = gestionSerialPort.conectarsePuertoSerie(arduino);
+                        if (  resultadoConexion == 1)
+                        {
+                            System.out.println("Conexion del puerto " + arduino.getNombrePuerto() + " realizada correctamente");
+                            estadoConexion = true;
+                        }
+                        else if ( resultadoConexion  == 2)
+                        {
+                            System.out.println("El puerto serie "+arduino.getNombrePuerto()+" ya esta en uso");
+                        }
+                        else if ( resultadoConexion  == 3)
+                        {
+                            System.out.println("No se encuentra el puerto "+arduino.getNombrePuerto());
+                        }
+                    break;
+
+                    case 2:
+                        if ( estadoConexion == true )
+                        {
+                            gestionSerialPort.enviarCaracterPuertoSerie(arduino); break;
+                        }
+                        else
+                        {
+                            System.out.println("\nDebe estar conectado a un puerto serie para enviar un caracter");
+                        }
+                        break;
 
                     //MODULO ENVIAR CARACTERES
-                    case 2: gestionSerialPort.enviarCadenaPuertoSerie(arduino); break;
+                    case 3:
+                        if ( estadoConexion == true )
+                        {
+                            gestionSerialPort.enviarCadenaPuertoSerie(arduino); break;
+                        }
+                        else
+                        {
+                            System.out.println("\nDebe estar conectado a un puerto serie para enviar un caracter");
+                        }
+                    break;
 
-                    //MODULO RECIBIR CARACTERES
-                    case 3: gestionSerialPort.imprimirCaracterRecibidoPuertoSerie(arduino); break;
-
-                    //MODULO LEER SENSOR TEMPERATURA
-                    case 4: gestionSerialPort.imprimirValorSensorLuz(arduino); break;
+                    //Desconectarse
+                    case 4:
+                        if ( arduino.cerrarPuerto() == true )
+                        {
+                            System.out.println("Desconexion del puerto "+arduino.getNombrePuerto()+" realizada correctamente");
+                            estadoConexion = false;
+                        }
+                        else
+                        {
+                            System.out.println("\nNo esta conectado a ningun puerto serie");
+                        }
+                    break;
                 }
             }
 
         } while ( opcionMenuPrincipal != OPCION_SALIR );
 
         //Si el puerto esta abierto, cerramos la conexion antes de salir
-        if ( arduino.getEstadoConexion() )
+        if ( estadoConexion == true )
         {
             arduino.cerrarPuerto();
         }
@@ -72,10 +116,10 @@ public class Main
     {
         System.out.println("\n.:| Arduino Serial Port |:.\n");
         System.out.println("1. Conectarse a un puerto");
-        System.out.println("2. Enviar texto matriz de leds");
-        System.out.println("3. Recibir caracter");
+        System.out.println("2. Enviar caracter a matriz de leds");
+        System.out.println("3. Enviar cadena de caracteres a matriz de leds");
         System.out.println("4. Leer Sensor Temperatura");
-        System.out.println("5. Salir");
+        System.out.println("6. Salir");
     }
 }
 
