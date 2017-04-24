@@ -107,7 +107,15 @@ public class Main
 
                     //Desconectarse
                     case 4:
-                        System.out.println("Datos recibidos: "+arduino.getDatosRecibidos());
+                        if ( estadoConexion == true )
+                        {
+                            System.out.println("Datos recibidos: "+arduino.getDatosRecibidos());
+                        }
+                        else
+                        {
+                            System.out.println("\nDebe estar conectado a un puerto serie para leer datos");
+                        }
+
                     break;
                 }
             }
