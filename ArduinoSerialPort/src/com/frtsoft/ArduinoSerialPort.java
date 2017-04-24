@@ -49,20 +49,10 @@ public class ArduinoSerialPort implements SerialPortEventListener
 //------------------------------- PROPIEDADES -----------------------------------------------//
     //BASICAS
     private SerialPort puerto;          //Definimos el puerto serie
-    private String nombrePuerto;        //Nombre del puerto serie (Como lo reconoce el sistema)
-    private boolean estadoConexion;     //booleano para saber si esta conectado o no
     private InputStream flujoEntrada;   //Permite leer del puerto serie
     private OutputStream flujoSalida;   //Permite escribir en el puerto serie
     private int byteRecibido;
-
-    //Configuracion de la conexion
-    private int baudRate;  // Velocidad de transmision en bits por segundo
-    private int dataBits;  // Tamaño de la trama de bits enviados
-    private int parity;    //Sin paridad
-    private int stopBits;  // Usamos 1 bit control
-
     //DERIVADAS
-    //NINGUNA
 
     //COMPARTIDAS
     //NINGUNA
@@ -73,31 +63,14 @@ public class ArduinoSerialPort implements SerialPortEventListener
     public ArduinoSerialPort()
     {
         puerto  = null;
-        nombrePuerto = null;
-        baudRate = 0;
-        dataBits = 0;
-        parity = 0;
-        stopBits = 0;
         flujoEntrada = null;
         flujoSalida = null;
     }
 
     //CONSTRUCTOR SOBRECARGADO
-    public ArduinoSerialPort(SerialPort puerto,
-                             String nombrePuerto,
-                             int baudRate,
-                             int dataBits,
-                             int parity,
-                             int stopBits,
-                             InputStream flujoEntrada,
-                             OutputStream flujoSalida)
+    public ArduinoSerialPort(SerialPort puerto, InputStream flujoEntrada, OutputStream flujoSalida)
     {
         this.puerto = puerto;
-        this.nombrePuerto = nombrePuerto;
-        this.baudRate = baudRate;
-        this.dataBits = dataBits;
-        this.parity = parity;
-        this.stopBits = stopBits;
         this.flujoEntrada = flujoEntrada;
         this.flujoSalida = flujoSalida;
     }
@@ -106,11 +79,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
     public ArduinoSerialPort(ArduinoSerialPort arduinoSerialPort)
     {
         this.puerto = arduinoSerialPort.getPuerto();
-        this.nombrePuerto = arduinoSerialPort.getNombrePuerto();
-        this.baudRate = arduinoSerialPort.getBaudRate();
-        this.dataBits = arduinoSerialPort.getDataBits();
-        this.parity = arduinoSerialPort.getParity();
-        this.stopBits = arduinoSerialPort.getStopBits();
         this.flujoEntrada = arduinoSerialPort.flujoEntrada;
         this.flujoSalida = arduinoSerialPort.flujoSalida;
     }
@@ -121,26 +89,6 @@ public class ArduinoSerialPort implements SerialPortEventListener
 {
     return puerto;
 }
-    public String getNombrePuerto()
-    {
-        return nombrePuerto;
-    }
-    public int getBaudRate()
-    {
-        return baudRate;
-    }
-    public int getDataBits()
-    {
-        return dataBits;
-    }
-    public int getParity()
-    {
-        return parity;
-    }
-    public int getStopBits()
-    {
-        return stopBits;
-    }
     public int getByteRecibido()
     {
         return byteRecibido;
@@ -156,44 +104,24 @@ public class ArduinoSerialPort implements SerialPortEventListener
 //------------------------------- FIN METODOS CONSULTORES ------------------------------------//
 
 //------------------------------- METODOS MODIFICADORES --------------------------------------//
-public void setPuerto(SerialPort puerto) {
-    this.puerto = puerto;
-}
-    public void setNombrePuerto(String nombrePuerto)
-    {
-        this.nombrePuerto = nombrePuerto;
-    }
-    public void setBaudRate(int baudRate)
-    {
-        this.baudRate = baudRate;
-    }
-    public void setDataBits(int dataBits)
-    {
-        this.dataBits = dataBits;
-    }
-    public void setParity(int parity)
-    {
-        this.parity = parity;
-    }
-    public void setStopBits(int stopBits)
-    {
-        this.stopBits = stopBits;
+    public void setPuerto(SerialPort puerto) {
+        this.puerto = puerto;
     }
     private void setFlujoEntrada(InputStream flujoEntrada)
-    {
-        this.flujoEntrada = flujoEntrada;
-    }
+        {
+            this.flujoEntrada = flujoEntrada;
+        }
     private void setFlujoSalida(OutputStream flujoSalida)
-    {
-        this.flujoSalida = flujoSalida;
-    }
+        {
+            this.flujoSalida = flujoSalida;
+        }
 //------------------------------- FIN METODOS MODIFICADORES ----------------------------------//
 
 //------------------------------- METODOS HEREDADOS ------------------------------------------//
 @Override
 public String toString()
 {
-    return (puerto.toString()+", "+nombrePuerto+","+baudRate+", "+dataBits+", "+parity+", "+stopBits+", "+byteRecibido+", "+flujoEntrada.toString()+", "+flujoSalida.toString() );
+    return (puerto.toString()+","+byteRecibido+","+flujoEntrada.toString()+","+flujoSalida.toString() );
 }
 
     @Override
@@ -216,12 +144,29 @@ public String toString()
     public int hashCode()
     {
         int codigo;
-
-        codigo = parity * 13 + stopBits / 7 - baudRate * 16 + dataBits * 3; // Preguntar a Asun si puede usarse math.random
-
+        codigo = puerto.getParity() * 13 + puerto.getStopBits() / 7 - puerto.getBaudRate() * 16 + puerto.getDataBits() * 3 - Integer.parseInt(puerto.getName());
         return codigo;
     }
 
+    /*
+    INTERFAZ
+    Funcionamiento:
+        Comprueba si dos puertos son iguales
+    Prototipo:
+        public boolean equals(Object o)
+    Entrada:
+        Un objeto
+    Precondiciones:
+        -
+    Salida:
+        Un booleano
+    Postcondiciones:
+        Devolvera el resultado de la comparacion
+        * Si tienen el mismo valor en DataBits, BaudRate, StopBits y Parity para el sistema son puertos iguales
+        * TRUE cuando tengan la misma configuracion
+        * FALSE cuando no tengan la misma configuracion
+    Entrada / Salida:
+    */
     @Override
     public boolean equals(Object o)
     {
@@ -230,9 +175,13 @@ public String toString()
         // Seran iguales  cuando tengan el mismo nombre en el sistema
         if (o != null && o instanceof ArduinoSerialPort)
         {
-            ArduinoSerialPort a = (ArduinoSerialPort) o;
+            ArduinoSerialPort arduinoSerialPort = (ArduinoSerialPort) o;
 
-            if ( nombrePuerto.equals(a.getNombrePuerto()) )
+            if ( puerto.getDataBits() == arduinoSerialPort.getPuerto().getDataBits() &&
+                 puerto.getBaudRate() == arduinoSerialPort.getPuerto().getBaudRate() &&
+                 puerto.getStopBits() == arduinoSerialPort.getPuerto().getStopBits() &&
+                 puerto.getParity()   == arduinoSerialPort.getPuerto().getParity()
+               )
             {
                 igual = true;
             }
@@ -240,17 +189,40 @@ public String toString()
         return igual;
     }
 
+    /*
+    INTERFAZ
+    Funcionamiento:
+        Compara dos puertos segun su velocidad de transiomision
+    Prototipo:
+        public int compareTo(ArduinoSerialPort arduinoSerialPort)
+    Entrada:
+        Un objeto tipo ArduinoSerialPort
+    Precondiciones:
+        -
+    Salida:
+        Un entero
+    Postcondiciones:
+        Devolvera el resultado de la comparacion
+        * 1  cuando tenga mayor velocidad
+        * -1 cuado tenga menor velocidad
+        * 0 cuando tengan la misma velodiad
+    Entrada / Salida:
+    */
     public int compareTo(ArduinoSerialPort arduinoSerialPort)
     {
         int comparacion;
 
-        if (getNombrePuerto().equals(arduinoSerialPort.getNombrePuerto()))
+        if (puerto.getBaudRate() > arduinoSerialPort.getPuerto().getBaudRate())
         {
-            comparacion = 0;
+            comparacion = 1;
+        }
+        else if (puerto.getBaudRate() < arduinoSerialPort.getPuerto().getBaudRate())
+        {
+            comparacion = -1;
         }
         else
         {
-            comparacion = 1;
+            comparacion = 0;
         }
         return comparacion;
     }
@@ -264,16 +236,20 @@ public String toString()
     Prototipo:
         public int abrirPuerto()
     Entrada:
-
+        -
     Precondiciones:
-
+        -
     Salida:
         Un entero
     Postcondiciones:
-        Devolvera un entero segun
+        Devolvera con el resultado de la conexion
+        * 3 cuando no se encuentre el puerto
+        * 2 cuando el puerto ya este en uso
+        * 1 cuando la conexion se realice correctamente
+
     Entrada / Salida:
     */
-    public int abrirPuerto()
+    public int abrirPuerto(String nombrePuerto, int baudRate)
     {
         int resultadoConexion = 3;
 
@@ -299,7 +275,7 @@ public String toString()
                             //Configuramos la conexion
                             puerto.disableReceiveThreshold();
                             puerto.enableReceiveTimeout(3000);
-                            puerto.setSerialPortParams(baudRate, dataBits, stopBits, parity);
+                            puerto.setSerialPortParams(baudRate,8,SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
 
                             //Establecemos el flujo de entrada / salida entre el puerto serie y el sistema
                             flujoEntrada = puerto.getInputStream();
@@ -309,30 +285,28 @@ public String toString()
                             puerto.addEventListener(this);
                             puerto.notifyOnDataAvailable(true);
 
+                            //Si el puerto fue abierto correctamente deberia ser distinto de null
                             if ( puerto != null )
                             {
-                                resultadoConexion = 1;
-                                estadoConexion = true;
+                                resultadoConexion = 1; //Puerto abierto correctemente
                             }
                         }
                         else
                         {
-                            resultadoConexion = 2;
+                            resultadoConexion = 2; //Puerto seleccionado ya esta en uso
                         }
                     }
                     else
                     {
-                        resultadoConexion = 3;
+                        resultadoConexion = 3; //No se encuentra el puerto serie
                     }
                 }
             }
         }
         catch ( Exception e )
         {
-            System.out.println("Error: Imposible abrir el puerto "+getNombrePuerto());
-            puerto = null;
-            flujoEntrada = null;
-            flujoSalida = null;
+            e.printStackTrace();
+            //System.out.println("Error: Imposible abrir el puerto "+puerto.getName());
         }
         return resultadoConexion;
     }
@@ -379,28 +353,34 @@ public String toString()
         }
     }
 
-    public void enviarCaracter(char caracter)
+    public boolean enviarCaracter(char caracter)
     {
+        boolean enviadoCorrectamente = false;
         try
         {
             flujoSalida.write(caracter);
+            enviadoCorrectamente = true;
         }
         catch (IOException e)
         {
             System.out.println("Error: No se ha enviado '"+caracter+"' correctamente");
         }
+        return enviadoCorrectamente;
     }
 
-    public void enviarString(String cadena)
+    public boolean enviarString(String cadena)
     {
+        boolean enviadoCorrectamente = false;
         try
         {
             flujoSalida.write(cadena.getBytes());
+            enviadoCorrectamente = true;
         }
         catch (IOException e)
         {
             System.out.println("Error: No se ha enviado '"+cadena+"' correctamente");
         }
+        return enviadoCorrectamente;
     }
 //------------------------------- FIN METODOS AÑADIDOS ---------------------------------------//
 }

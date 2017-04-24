@@ -13,7 +13,7 @@ public class GestionSerialPort
     Descripcion:
         Busca puertos serie en el sistema, devuelve los puertos disponibles en el sistema
     Prototipo:
-        public ArrayList<String> getPuertosDisponibles()
+        public ArrayList<String> detectarPuertosDisponibles()
     Entradas:
         -
     Precondiciones:
@@ -27,10 +27,12 @@ public class GestionSerialPort
     public ArrayList<String> detectarPuertosDisponibles()
     {
         ArrayList<String> puertosDisponibles = new ArrayList<>();
-        CommPortIdentifier idPuertoSerie;
-        Enumeration puertosDelSistema;
 
-        puertosDelSistema = CommPortIdentifier.getPortIdentifiers(); //Enum de los puertos del sistema
+        CommPortIdentifier idPuertoSerie; //Identificador de puertos
+        Enumeration puertosDelSistema;    //Enum de puertos
+
+        //Detectamos los puertos del sistema
+        puertosDelSistema = CommPortIdentifier.getPortIdentifiers();
 
         //Si hay puertos...
         if ( puertosDelSistema.hasMoreElements() )
@@ -43,7 +45,7 @@ public class GestionSerialPort
                 //Si el puerto es de tipo serial
                 if (idPuertoSerie.getPortType() == CommPortIdentifier.PORT_SERIAL)
                 {
-                    puertosDisponibles.add(idPuertoSerie.getName());
+                    puertosDisponibles.add(idPuertoSerie.getName()); //Insertamos el puerto en nuestra lista de puertos disponibles
                 }
             }
         }
@@ -96,9 +98,9 @@ public class GestionSerialPort
     Precondiciones:
         -
     Salida:
-        Devuelve el nombre del puerto serie seleccionado
+        Una cadena (String)
     Postcondiciones:
-        El nombre del puerto debe ser un puerto existente en el sistema
+        Devuelve el nombre del puerto serie seleccionado, El puerto seleccionado sera uno de los disponibles en la lista
     Entrada / Salida:
     */
     public String seleccionarPuerto()
@@ -169,61 +171,6 @@ public class GestionSerialPort
         return rangoBaudRate[velocidadElegida - 1];
     }
 
-    public int conectarsePuertoSerie( ArduinoSerialPort arduino )
-    {
-        int resultadoConexion = 0;
-
-        //Pedimos al usuario que seleccione el puerto al que se quiere conectar
-        //y la velocidad de transmision con la que quiere enviar / recibir los datos
-        String nombrePuerto = seleccionarPuerto();
-        int velocidadTransmision = seleccionarVelocidadTransmision();
-
-        //Configuramos el puerto y la conexion
-        arduino.setNombrePuerto(nombrePuerto);
-        arduino.setBaudRate(velocidadTransmision);
-        arduino.setDataBits(8);
-        arduino.setParity(SerialPort.PARITY_NONE);
-        arduino.setStopBits(SerialPort.STOPBITS_1);
-
-        //Abrimos el puerto serie
-        resultadoConexion = arduino.abrirPuerto();
-
-        return (resultadoConexion);
-    }
-
-    public void enviarCaracterPuertoSerie( ArduinoSerialPort arduino )
-    {
-        char caracterEnviado;
-        Scanner scanner = new Scanner(System.in);
-
-        //Pedimos al usuario que introduzca el caracter que quiere enviar
-        do
-        {
-            System.out.print("Introduce un caracter de la a-z o 0-9: ");
-            caracterEnviado = scanner.next().charAt(0);
-        } while ( (caracterEnviado < 'a' || caracterEnviado > 'z') && (caracterEnviado < '0' || caracterEnviado > '9') );
-
-        //Enviamos el caracter que introdujo el usuario
-        arduino.enviarCaracter(caracterEnviado);
-        esperar(100);
-    }
-
-    public void enviarCadenaPuertoSerie( ArduinoSerialPort arduino )
-    {
-        String cadenaEnviada;
-        Scanner scanner = new Scanner(System.in);
-
-        //Pedimos al usuario que introduzca la cadena que quiere enviar
-        do
-        {
-            System.out.print("Introduce una cadena de caracteres: ");
-            cadenaEnviada = scanner.nextLine();
-        } while ( cadenaEnviada.matches(".*([ \t]).*") == false );
-
-        //Enviamos la cadena que introdujo el usuario
-        arduino.enviarString(cadenaEnviada+" ");
-        esperar(100);
-    }
 
     /*
      INTERFAZ

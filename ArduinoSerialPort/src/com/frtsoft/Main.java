@@ -11,8 +11,7 @@ public class Main
         boolean estadoConexion = false;
         int resultadoConexion;
         char caracterEnviado;
-        char temperatura;
-        int opcionConexion;
+        String cadenaEnviada;
 
         int opcionMenuPrincipal;
         final int OPCION_SALIR = 5;
@@ -38,26 +37,42 @@ public class Main
                 {
                     //MODULO CONECTARSE A PUERTO SERIE
                     case 1:
-                        resultadoConexion = gestionSerialPort.conectarsePuertoSerie(arduino);
+
+                        //Pedimos al usuario que seleccione el puerto al que se quiere conectar
+                        //y la velocidad de transmision con la que quiere enviar / recibir los datos
+                        String nombrePuerto = gestionSerialPort.seleccionarPuerto();
+                        int velocidadTransmision = gestionSerialPort.seleccionarVelocidadTransmision();
+
+                        //Abrimos el puerto serie
+                        resultadoConexion = arduino.abrirPuerto(nombrePuerto,velocidadTransmision);
+
                         if (  resultadoConexion == 1)
                         {
-                            System.out.println("Conexion del puerto " + arduino.getNombrePuerto() + " realizada correctamente");
+                            System.out.println("Conexion del puerto " + arduino.getPuerto().getName() + " realizada correctamente");
                             estadoConexion = true;
                         }
                         else if ( resultadoConexion  == 2)
                         {
-                            System.out.println("El puerto serie "+arduino.getNombrePuerto()+" ya esta en uso");
+                            System.out.println("El puerto serie "+arduino.getPuerto().getName()+" ya esta en uso");
                         }
                         else if ( resultadoConexion  == 3)
                         {
-                            System.out.println("No se encuentra el puerto "+arduino.getNombrePuerto());
+                            System.out.println("No se encuentra el puerto "+arduino.getPuerto().getName());
                         }
                     break;
 
                     case 2:
                         if ( estadoConexion == true )
                         {
-                            gestionSerialPort.enviarCaracterPuertoSerie(arduino); break;
+                            //Pedimos al usuario que introduzca el caracter que quiere enviar
+                            do
+                            {
+                                System.out.print("Introduce un caracter de la a-z o 0-9: ");
+                                caracterEnviado = scanner.next().charAt(0);
+                            } while ( (caracterEnviado < 'a' || caracterEnviado > 'z') && (caracterEnviado < '0' || caracterEnviado > '9') );
+
+                            //Enviamos el caracter que introdujo el usuario
+                            arduino.enviarCaracter(caracterEnviado);
                         }
                         else
                         {
@@ -69,7 +84,15 @@ public class Main
                     case 3:
                         if ( estadoConexion == true )
                         {
-                            gestionSerialPort.enviarCadenaPuertoSerie(arduino); break;
+                            //Pedimos al usuario que introduzca la cadena que quiere enviar
+                            do
+                            {
+                                System.out.print("Introduce una cadena de caracteres: ");
+                                cadenaEnviada = scanner.nextLine();
+                            } while ( cadenaEnviada.matches(".*([ \t]).*") == false );
+
+                            //Enviamos la cadena que introdujo el usuario
+                            arduino.enviarString(cadenaEnviada+" ");
                         }
                         else
                         {
@@ -81,7 +104,7 @@ public class Main
                     case 4:
                         if ( arduino.cerrarPuerto() == true )
                         {
-                            System.out.println("Desconexion del puerto "+arduino.getNombrePuerto()+" realizada correctamente");
+                            System.out.println("Desconexion del puerto "+arduino.getPuerto().getName()+" realizada correctamente");
                             estadoConexion = false;
                         }
                         else
@@ -119,7 +142,7 @@ public class Main
         System.out.println("2. Enviar caracter a matriz de leds");
         System.out.println("3. Enviar cadena de caracteres a matriz de leds");
         System.out.println("4. Leer Sensor Temperatura");
-        System.out.println("6. Salir");
+        System.out.println("5. Salir");
     }
 }
 
