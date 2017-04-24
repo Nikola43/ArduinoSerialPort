@@ -49,9 +49,7 @@ public class ArduinoSerialPort implements SerialPortEventListener
 //------------------------------- PROPIEDADES -----------------------------------------------//
     //BASICAS
     private SerialPort puerto;          //Definimos el puerto serie
-    private InputStream flujoEntrada;   //Permite leer del puerto serie
-    private OutputStream flujoSalida;   //Permite escribir en el puerto serie
-    private int byteRecibido;
+    private char datosRecibidos;
     //DERIVADAS
 
     //COMPARTIDAS
@@ -63,24 +61,18 @@ public class ArduinoSerialPort implements SerialPortEventListener
     public ArduinoSerialPort()
     {
         puerto  = null;
-        flujoEntrada = null;
-        flujoSalida = null;
     }
 
     //CONSTRUCTOR SOBRECARGADO
-    public ArduinoSerialPort(SerialPort puerto, InputStream flujoEntrada, OutputStream flujoSalida)
+    public ArduinoSerialPort(SerialPort puerto)
     {
         this.puerto = puerto;
-        this.flujoEntrada = flujoEntrada;
-        this.flujoSalida = flujoSalida;
     }
 
     //CONSTRUCTOR DE COPIA
     public ArduinoSerialPort(ArduinoSerialPort arduinoSerialPort)
     {
         this.puerto = arduinoSerialPort.getPuerto();
-        this.flujoEntrada = arduinoSerialPort.flujoEntrada;
-        this.flujoSalida = arduinoSerialPort.flujoSalida;
     }
 //------------------------------- FIN CONSTRUCTORES ------------------------------------------//
 
@@ -89,17 +81,9 @@ public class ArduinoSerialPort implements SerialPortEventListener
 {
     return puerto;
 }
-    public int getByteRecibido()
+    public char getDatosRecibidos()
     {
-        return byteRecibido;
-    }
-    public InputStream getFlujoEntrada()
-    {
-        return flujoEntrada;
-    }
-    public OutputStream getFlujoSalida()
-    {
-        return flujoSalida;
+        return datosRecibidos;
     }
 //------------------------------- FIN METODOS CONSULTORES ------------------------------------//
 
@@ -107,21 +91,13 @@ public class ArduinoSerialPort implements SerialPortEventListener
     public void setPuerto(SerialPort puerto) {
         this.puerto = puerto;
     }
-    private void setFlujoEntrada(InputStream flujoEntrada)
-        {
-            this.flujoEntrada = flujoEntrada;
-        }
-    private void setFlujoSalida(OutputStream flujoSalida)
-        {
-            this.flujoSalida = flujoSalida;
-        }
 //------------------------------- FIN METODOS MODIFICADORES ----------------------------------//
 
 //------------------------------- METODOS HEREDADOS ------------------------------------------//
 @Override
 public String toString()
 {
-    return (puerto.toString()+","+byteRecibido+","+flujoEntrada.toString()+","+flujoSalida.toString() );
+    return (puerto.toString()+","+datosRecibidos);
 }
 
     @Override
@@ -277,10 +253,6 @@ public String toString()
                             puerto.enableReceiveTimeout(3000);
                             puerto.setSerialPortParams(baudRate,8,SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
 
-                            //Establecemos el flujo de entrada / salida entre el puerto serie y el sistema
-                            flujoEntrada = puerto.getInputStream();
-                            flujoSalida = puerto.getOutputStream();
-
                             //Creamos un listener para escuchar lo que manda el puerto serie al sistema
                             puerto.addEventListener(this);
                             puerto.notifyOnDataAvailable(true);
@@ -311,39 +283,28 @@ public String toString()
         return resultadoConexion;
     }
 
-    public boolean cerrarPuerto()
+    public void cerrarPuerto()
     {
-        boolean estadoDesconexion = false;
         // Si el puerto esta abierto es que es distinto de null
         if ( puerto != null)
         {
-            try
-            {
-
-                flujoEntrada.close();   //Cerramos el flujo de entrada
-                flujoSalida.close();  //Cerramos el flujo de salida
-                puerto.removeEventListener(); //Eliminamos el escuchador de eventos
-                puerto.close();        //Cerramos el puerto
-                estadoDesconexion = true;
-            }
-            catch (IOException e)
-            {
-                System.out.println("Error: No se ha cerrado la conexion correctamente");
-            }
+            puerto.removeEventListener(); //Eliminamos el escuchador de eventos
+            puerto.close();        //Cerramos el puerto
         }
-        return estadoDesconexion;
     }
 
     synchronized public void serialEvent(SerialPortEvent serialEvent)
     {
+        InputStream inputStream;
         try
         {   //Comprobamos el tipo de evento del puerto serie
             if ( serialEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE )
             {
+                inputStream = puerto.getInputStream();
                 // Comprobamos si hay datos disponibles antes de leerlos
-                if ( flujoEntrada.available() > 0 )
+                if ( inputStream.available() > 0 )
                 {
-                    byteRecibido = (char) flujoEntrada.read();
+                    datosRecibidos = (char) inputStream.read();
                 }
             }
         }
@@ -356,9 +317,11 @@ public String toString()
     public boolean enviarCaracter(char caracter)
     {
         boolean enviadoCorrectamente = false;
+        OutputStream outputStream;
         try
         {
-            flujoSalida.write(caracter);
+            outputStream = puerto.getOutputStream();
+            outputStream.write(caracter);
             enviadoCorrectamente = true;
         }
         catch (IOException e)
@@ -370,10 +333,12 @@ public String toString()
 
     public boolean enviarString(String cadena)
     {
+        OutputStream outputStream;
         boolean enviadoCorrectamente = false;
         try
         {
-            flujoSalida.write(cadena.getBytes());
+            outputStream = puerto.getOutputStream();
+            outputStream.write(cadena.getBytes());
             enviadoCorrectamente = true;
         }
         catch (IOException e)

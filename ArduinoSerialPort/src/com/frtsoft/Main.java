@@ -18,6 +18,7 @@ public class Main
 
         Scanner scanner = new Scanner(System.in);
 
+
         GestionSerialPort gestionSerialPort = new GestionSerialPort();
 
         do
@@ -72,7 +73,10 @@ public class Main
                             } while ( (caracterEnviado < 'a' || caracterEnviado > 'z') && (caracterEnviado < '0' || caracterEnviado > '9') );
 
                             //Enviamos el caracter que introdujo el usuario
-                            arduino.enviarCaracter(caracterEnviado);
+                            if ( arduino.enviarCaracter(caracterEnviado) )
+                            {
+                                System.out.println("Caracter '"+caracterEnviado+"' enviado correctamente");
+                            }
                         }
                         else
                         {
@@ -85,32 +89,25 @@ public class Main
                         if ( estadoConexion == true )
                         {
                             //Pedimos al usuario que introduzca la cadena que quiere enviar
-                            do
-                            {
-                                System.out.print("Introduce una cadena de caracteres: ");
-                                cadenaEnviada = scanner.nextLine();
-                            } while ( cadenaEnviada.matches(".*([ \t]).*") == false );
+                            System.out.print("Introduce una cadena de caracteres: ");
+                            scanner.nextLine(); //Ejecutamos nextLine() antes de leer la cadena por el error que tiene scanner
+                            cadenaEnviada = scanner.nextLine();
 
                             //Enviamos la cadena que introdujo el usuario
-                            arduino.enviarString(cadenaEnviada+" ");
+                            if ( arduino.enviarString(cadenaEnviada+" ") )
+                            {
+                                System.out.println("Cadena '"+cadenaEnviada+"' enviada correctamente");
+                            }
                         }
                         else
                         {
-                            System.out.println("\nDebe estar conectado a un puerto serie para enviar un caracter");
+                            System.out.println("\nDebe estar conectado a un puerto serie para enviar una cadena");
                         }
                     break;
 
                     //Desconectarse
                     case 4:
-                        if ( arduino.cerrarPuerto() == true )
-                        {
-                            System.out.println("Desconexion del puerto "+arduino.getPuerto().getName()+" realizada correctamente");
-                            estadoConexion = false;
-                        }
-                        else
-                        {
-                            System.out.println("\nNo esta conectado a ningun puerto serie");
-                        }
+                        System.out.println("Datos recibidos: "+arduino.getDatosRecibidos());
                     break;
                 }
             }
