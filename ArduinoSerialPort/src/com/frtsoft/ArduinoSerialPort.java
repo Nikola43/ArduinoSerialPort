@@ -93,12 +93,12 @@ public class ArduinoSerialPort implements SerialPortEventListener
     }
 //------------------------------- FIN METODOS MODIFICADORES ----------------------------------//
 
-//------------------------------- METODOS HEREDADOS ------------------------------------------//
-@Override
-public String toString()
-{
-    return (puerto.toString()+","+datosRecibidos);
-}
+//------------------------------- METODOS SOBRESCRITOS ---------------------------------------//
+    @Override
+    public String toString()
+    {
+        return (puerto.toString()+","+datosRecibidos);
+    }
 
     @Override
     public ArduinoSerialPort clone()
@@ -202,7 +202,7 @@ public String toString()
         }
         return comparacion;
     }
-//------------------------------- FIN METODOS HEREDADOS --------------------------------------//
+//------------------------------- FIN METODOS SOBRESCRITOS -----------------------------------//
 
 //------------------------------- METODOS AÑADIDOS -------------------------------------------//
     /*
@@ -222,7 +222,6 @@ public String toString()
         * 3 cuando no se encuentre el puerto
         * 2 cuando el puerto ya este en uso
         * 1 cuando la conexion se realice correctamente
-
     Entrada / Salida:
     */
     public int abrirPuerto(String nombrePuerto, int baudRate)
@@ -310,7 +309,7 @@ public String toString()
         }
         catch (IOException e)
         {
-            System.out.println("Error: No se ha podido leer datos del puerto serie");
+            e.printStackTrace();
         }
     }
 
@@ -326,7 +325,7 @@ public String toString()
         }
         catch (IOException e)
         {
-            System.out.println("Error: No se ha enviado '"+caracter+"' correctamente");
+            e.printStackTrace();
         }
         return enviadoCorrectamente;
     }
@@ -343,7 +342,7 @@ public String toString()
         }
         catch (IOException e)
         {
-            System.out.println("Error: No se ha enviado '"+cadena+"' correctamente");
+            e.printStackTrace();
         }
         return enviadoCorrectamente;
     }
