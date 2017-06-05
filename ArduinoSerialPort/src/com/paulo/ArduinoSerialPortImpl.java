@@ -23,7 +23,6 @@
         METODOS AÑADIDOS
 */
 
-
 package com.paulo;
 
 //Importar clases para manejar el puerto serie
@@ -34,7 +33,6 @@ import gnu.io.SerialPortEventListener; //Escuchador de eventos
 
 //Importar clases de java para manejar el programa
 import java.io.IOException; //Manejo de excepciones
-import java.io.InputStream; //Necesario para leer del puerto serie
 import java.io.OutputStream; //Necesario para escribir del puerto serie
 import java.util.Enumeration; //Enum de puertos
 
@@ -278,9 +276,9 @@ public class ArduinoSerialPortImpl implements SerialPortEventListener
 
     /* INTERFAZ
     Cabecera:
-		-
+		public void cerrarPuerto()
     Descripcion:
-    	-
+    	Finaliza la conexion del sistema con el puerto serie, cierra primero el escuchador de eventos y luego el puerto
     Entradas:
         -
     Precondiciones:
@@ -321,37 +319,79 @@ public class ArduinoSerialPortImpl implements SerialPortEventListener
         }
     }
 
+    /* INTERFAZ
+    Cabecera:
+		public boolean enviarCaracter(char caracter)
+    Descripcion:
+    	Escribe un caracter en el puerto serie
+    Entradas:
+        Un caracter
+    Precondiciones:
+        -
+    Salidas:
+        Un booleano
+    Postcondiciones:
+        Devolvera TRUE cuando el caracter se envie correctamente
+        Devolvera FALSE cuando el caracter no se envie correctamente
+    Entrada/Salida:
+        -
+    */
     public boolean enviarCaracter(char caracter)
     {
         boolean enviadoCorrectamente = false;
         OutputStream outputStream;
-        try
+
+        if ( caracter != '\0' )
         {
-            outputStream = puerto.getOutputStream();
-            outputStream.write(caracter);
-            enviadoCorrectamente = true;
+            try
+            {
+                outputStream = puerto.getOutputStream();
+                outputStream.write(caracter);
+                enviadoCorrectamente = true;
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
         }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+
         return enviadoCorrectamente;
     }
 
+    /* INTERFAZ
+    Cabecera:
+		public boolean enviarString(String cadena)
+    Descripcion:
+    	Escribe una cadena en el puerto serie
+    Entradas:
+        Una String
+    Precondiciones:
+        -
+    Salidas:
+        Un booleano
+    Postcondiciones:
+        Devolvera TRUE cuando la cadena se envie correctamente
+        Devolvera FALSE cuando no se envie correctamente
+    Entrada/Salida:
+        -
+    */
     public boolean enviarString(String cadena)
     {
-        OutputStream outputStream;
         boolean enviadoCorrectamente = false;
-        try
+
+        if ( cadena != null )
         {
-            outputStream = puerto.getOutputStream();
-            outputStream.write(cadena.getBytes());
-            enviadoCorrectamente = true;
+            try
+            {
+                puerto.getOutputStream().write(cadena.getBytes());
+                enviadoCorrectamente = true;
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
         }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+
         return enviadoCorrectamente;
     }
 //------------------------------- FIN METODOS AÑADIDOS ---------------------------------------//
