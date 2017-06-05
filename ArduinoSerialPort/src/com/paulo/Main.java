@@ -1,4 +1,4 @@
-package com.frtsoft;
+package com.paulo;
 
 import java.util.Scanner;
 
@@ -7,7 +7,7 @@ public class Main
     public static void main(String[] args)
     {
         //Variables para manejar el puerto serie
-        ArduinoSerialPort arduino = new ArduinoSerialPort();
+        ArduinoSerialPortImpl arduino = new ArduinoSerialPortImpl();
         boolean estadoConexion = false;
         int resultadoConexion;
         char caracterEnviado;

@@ -1,7 +1,7 @@
-package com.frtsoft;
+package com.paulo;
 
 import gnu.io.CommPortIdentifier;
-import gnu.io.SerialPort;
+
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Scanner;

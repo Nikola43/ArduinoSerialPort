@@ -1,9 +1,7 @@
 /*
-    CLASE Jugador
-
     PROPIEDADES
         BASICAS
-            NINGUNA
+            SerialPort puerto
 
         DERIVADAS
             NINGUNA
@@ -15,10 +13,6 @@
         NINGUNA
 
     INTERFAZ
-        METODOS CONSULTORES
-
-        METODOS MODIFICADORES
-
         METODOS HEREDADOS
             public String toString()
             public int hashCode()
@@ -30,7 +24,7 @@
 */
 
 
-package com.frtsoft;
+package com.paulo;
 
 //Importar clases para manejar el puerto serie
 import gnu.io.CommPortIdentifier; //Identificador de puertos
@@ -44,9 +38,9 @@ import java.io.InputStream; //Necesario para leer del puerto serie
 import java.io.OutputStream; //Necesario para escribir del puerto serie
 import java.util.Enumeration; //Enum de puertos
 
-public class ArduinoSerialPort implements SerialPortEventListener
+public class ArduinoSerialPortImpl implements SerialPortEventListener
 {
-//------------------------------- PROPIEDADES -----------------------------------------------//
+    //------------------------------- PROPIEDADES -----------------------------------------------//
     //BASICAS
     private SerialPort puerto;          //Definimos el puerto serie
     private char datosRecibidos;
@@ -56,44 +50,44 @@ public class ArduinoSerialPort implements SerialPortEventListener
     //NINGUNA
 //------------------------------- FIN PROPIEDADES --------------------------------------------//
 
-//------------------------------- CONSTRUCTORES ----------------------------------------------//
+    //------------------------------- CONSTRUCTORES ----------------------------------------------//
     //CONSTRUCTOR POR DEFECTO
-    public ArduinoSerialPort()
+    public ArduinoSerialPortImpl()
     {
         puerto  = null;
     }
 
     //CONSTRUCTOR SOBRECARGADO
-    public ArduinoSerialPort(SerialPort puerto)
+    public ArduinoSerialPortImpl(SerialPort puerto)
     {
         this.puerto = puerto;
     }
 
     //CONSTRUCTOR DE COPIA
-    public ArduinoSerialPort(ArduinoSerialPort arduinoSerialPort)
+    public ArduinoSerialPortImpl(ArduinoSerialPortImpl arduinoSerialPort)
     {
         this.puerto = arduinoSerialPort.getPuerto();
     }
 //------------------------------- FIN CONSTRUCTORES ------------------------------------------//
 
-//------------------------------- METODOS CONSULTORES ----------------------------------------//
+    //------------------------------- METODOS CONSULTORES ----------------------------------------//
     public SerialPort getPuerto()
-{
-    return puerto;
-}
+    {
+        return puerto;
+    }
     public char getDatosRecibidos()
     {
         return datosRecibidos;
     }
 //------------------------------- FIN METODOS CONSULTORES ------------------------------------//
 
-//------------------------------- METODOS MODIFICADORES --------------------------------------//
+    //------------------------------- METODOS MODIFICADORES --------------------------------------//
     public void setPuerto(SerialPort puerto) {
         this.puerto = puerto;
     }
 //------------------------------- FIN METODOS MODIFICADORES ----------------------------------//
 
-//------------------------------- METODOS SOBRESCRITOS ---------------------------------------//
+    //------------------------------- METODOS SOBRESCRITOS ---------------------------------------//
     @Override
     public String toString()
     {
@@ -101,13 +95,13 @@ public class ArduinoSerialPort implements SerialPortEventListener
     }
 
     @Override
-    public ArduinoSerialPort clone()
+    public ArduinoSerialPortImpl clone()
     {
-        ArduinoSerialPort copia = null;
+        ArduinoSerialPortImpl copia = null;
 
         try
         {
-            copia = (ArduinoSerialPort) super.clone();
+            copia = (ArduinoSerialPortImpl) super.clone();
         }
         catch (CloneNotSupportedException error)
         {
@@ -149,15 +143,15 @@ public class ArduinoSerialPort implements SerialPortEventListener
         boolean igual = false;
 
         // Seran iguales  cuando tengan el mismo nombre en el sistema
-        if (o != null && o instanceof ArduinoSerialPort)
+        if (o != null && o instanceof ArduinoSerialPortImpl)
         {
-            ArduinoSerialPort arduinoSerialPort = (ArduinoSerialPort) o;
+            ArduinoSerialPortImpl arduinoSerialPort = (ArduinoSerialPortImpl) o;
 
             if ( puerto.getDataBits() == arduinoSerialPort.getPuerto().getDataBits() &&
-                 puerto.getBaudRate() == arduinoSerialPort.getPuerto().getBaudRate() &&
-                 puerto.getStopBits() == arduinoSerialPort.getPuerto().getStopBits() &&
-                 puerto.getParity()   == arduinoSerialPort.getPuerto().getParity()
-               )
+                    puerto.getBaudRate() == arduinoSerialPort.getPuerto().getBaudRate() &&
+                    puerto.getStopBits() == arduinoSerialPort.getPuerto().getStopBits() &&
+                    puerto.getParity()   == arduinoSerialPort.getPuerto().getParity()
+                    )
             {
                 igual = true;
             }
@@ -184,7 +178,7 @@ public class ArduinoSerialPort implements SerialPortEventListener
         * 0 cuando tengan la misma velodiad
     Entrada / Salida:
     */
-    public int compareTo(ArduinoSerialPort arduinoSerialPort)
+    public int compareTo(ArduinoSerialPortImpl arduinoSerialPort)
     {
         int comparacion;
 
@@ -204,7 +198,7 @@ public class ArduinoSerialPort implements SerialPortEventListener
     }
 //------------------------------- FIN METODOS SOBRESCRITOS -----------------------------------//
 
-//------------------------------- METODOS AÑADIDOS -------------------------------------------//
+    //------------------------------- METODOS AÑADIDOS -------------------------------------------//
     /*
     INTERFAZ
     Funcionamiento:
@@ -282,28 +276,42 @@ public class ArduinoSerialPort implements SerialPortEventListener
         return resultadoConexion;
     }
 
+    /* INTERFAZ
+    Cabecera:
+		-
+    Descripcion:
+    	-
+    Entradas:
+        -
+    Precondiciones:
+        -
+    Salidas:
+        -
+    Postcondiciones:
+        -
+    Entrada/Salida:
+        -
+    */
     public void cerrarPuerto()
     {
         // Si el puerto esta abierto es que es distinto de null
         if ( puerto != null)
         {
             puerto.removeEventListener(); //Eliminamos el escuchador de eventos
-            puerto.close();        //Cerramos el puerto
+            puerto.close();               //Cerramos el puerto
         }
     }
 
     synchronized public void serialEvent(SerialPortEvent serialEvent)
     {
-        InputStream inputStream;
         try
         {   //Comprobamos el tipo de evento del puerto serie
             if ( serialEvent.getEventType() == SerialPortEvent.DATA_AVAILABLE )
             {
-                inputStream = puerto.getInputStream();
                 // Comprobamos si hay datos disponibles antes de leerlos
-                if ( inputStream.available() > 0 )
+                if ( puerto.getInputStream().available() > 0 )
                 {
-                    datosRecibidos = (char) inputStream.read();
+                    datosRecibidos = (char) puerto.getInputStream().read();
                 }
             }
         }
@@ -348,3 +356,4 @@ public class ArduinoSerialPort implements SerialPortEventListener
     }
 //------------------------------- FIN METODOS AÑADIDOS ---------------------------------------//
 }
+
